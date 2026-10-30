@@ -1,6 +1,7 @@
 var Plotly = require('../../../lib/index');
 var Lib = require('../../../src/lib');
 var ScatterPolarGl = require('../../../src/traces/scatterpolargl');
+const TOO_MANY_POINTS = require('../../../src/traces/scattergl/constants').TOO_MANY_POINTS;
 
 var d3Select = require('../../strict-d3').select;
 var d3SelectAll = require('../../strict-d3').selectAll;
@@ -298,6 +299,32 @@ describe('Test scatterpolargl interactions:', function() {
             expect(gd._fullLayout.polar._subplot._scene).toBe(null);
         })
         .then(done, done.fail);
+    });
+
+    it('@gl should set the marker snap to the trace length', (done) => {
+        gd = createGraphDiv();
+
+        const fig = (len) => {
+            const r = new Array(len);
+            const theta = new Array(len);
+            for (let i = 0; i < len; i++) {
+                r[i] = i % 10;
+                theta[i] = i % 360;
+            }
+            return { data: [{ type: 'scatterpolargl', mode: 'markers', r, theta }] };
+        };
+        const getSnap = () => gd._fullLayout.polar._subplot._scene.markerOptions[0].snap;
+
+        Plotly.newPlot(gd, fig(20000))
+            .then(() => {
+                expect(getSnap()).toBe(20000);
+
+                return Plotly.react(gd, fig(TOO_MANY_POINTS + 1));
+            })
+            .then(() => {
+                expect(getSnap()).toBe(TOO_MANY_POINTS + 1);
+            })
+            .then(done, done.fail);
     });
 
     ['r', 'theta'].forEach(function(ax) {

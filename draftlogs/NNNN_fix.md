@@ -1,0 +1,1 @@
+ - Fix `scatterpolargl` so that it draws every marker for traces with 10000 to 100000 points [[#NNNN](https://github.com/plotly/plotly.js/pull/NNNN)]
