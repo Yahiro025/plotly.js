@@ -1,0 +1,1 @@
+ - Skip scatter text labels in the range slider [[#PLACEHOLDER](https://github.com/plotly/plotly.js/pull/PLACEHOLDER)]

@@ -490,7 +490,11 @@ function plotOne(gd, idx, plotinfo, cdscatter, cdscatterAll, element, transition
 
         var trace = cdscatter[0].trace;
         var showMarkers = subTypes.hasMarkers(trace);
-        var showText = subTypes.hasText(trace);
+        // The range slider draws a miniature copy of the trace. Labels are
+        // unreadable at that size, so draw them only when text is the whole
+        // trace (#8118).
+        var showText = subTypes.hasText(trace) &&
+            (!plotinfo.isRangePlot || trace.mode === 'text');
 
         var keyFunc = getKeyFunc(trace);
         var markerFilter = hideFilter;

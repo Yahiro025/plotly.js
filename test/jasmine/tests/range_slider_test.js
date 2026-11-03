@@ -504,6 +504,53 @@ describe('Visible rangesliders', function() {
         })
         .then(done, done.fail);
     });
+
+    it('should not draw scatter text labels in the range slider', function(done) {
+        var data = [{
+            mode: 'lines+markers+text',
+            textposition: 'top center',
+            x: [1, 2, 3, 4, 5, 6, 7, 8],
+            y: [3, 5, 2, 6, 4, 7, 3, 5],
+            text: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+        }];
+
+        Plotly.newPlot(gd, data, {
+            width: 700,
+            height: 400,
+            showlegend: false,
+            xaxis: {rangeslider: {visible: true}}
+        })
+        .then(function() {
+            var sliderText = d3Select(getRangeSlider()).selectAll('g.textpoint text');
+            var mainText = d3Select(gd).selectAll('.scatterlayer g.textpoint text');
+
+            expect(sliderText.size()).toBe(0, 'range slider text labels');
+            expect(mainText.size()).toBe(8, 'main plot text labels');
+        })
+        .then(done, done.fail);
+    });
+
+    it('should keep text labels in the range slider for text-only traces', function(done) {
+        var data = [{
+            mode: 'text',
+            x: [1, 2, 3, 4, 5, 6, 7, 8],
+            y: [3, 5, 2, 6, 4, 7, 3, 5],
+            text: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+        }];
+
+        Plotly.newPlot(gd, data, {
+            width: 700,
+            height: 400,
+            showlegend: false,
+            xaxis: {rangeslider: {visible: true}}
+        })
+        .then(function() {
+            var sliderText = d3Select(getRangeSlider()).selectAll('g.textpoint text');
+
+            expect(sliderText.size()).toBe(8, 'range slider text labels');
+        })
+        .then(done, done.fail);
+    });
 });
 
 describe('Rangeslider visibility property', function() {
