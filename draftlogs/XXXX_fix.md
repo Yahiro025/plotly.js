@@ -1,0 +1,1 @@
+ - Keep the main contour clip when a range slider is visible [[#XXXX](https://github.com/plotly/plotly.js/pull/XXXX)]

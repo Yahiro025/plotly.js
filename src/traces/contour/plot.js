@@ -617,7 +617,8 @@ exports.drawLabels = function(labelGroup, labelData, gd, lineClip, labelClipPath
 function clipGaps(plotGroup, plotinfo, gd, cd0, perimeter) {
     var trace = cd0.trace;
     var clips = gd._fullLayout._clips;
-    var clipId = 'clip' + trace.uid;
+    // The range slider draws this trace on its own axes. A separate clip id keeps the main clip.
+    let clipId = `clip${trace.uid}${plotinfo.isRangePlot ? '-rangeplot' : ''}`;
 
     var clipPath = clips.selectAll('#' + clipId)
         .data(trace.connectgaps ? [] : [0]);

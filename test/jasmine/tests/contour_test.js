@@ -622,6 +622,64 @@ describe('contour plotting and editing', function() {
         .then(done, done.fail);
     });
 
+    it('keeps a full-size gap clip on the main plot when a range slider is visible', function(done) {
+        const x = [0, 1, 2, 3, 4, 5];
+        const y = [0, 1, 2, 3, 4];
+        const z = y.map((row) => x.map((col) => 10 * (col + row)));
+
+        function clipNode(group) {
+            const raw = group.getAttribute('clip-path') || '';
+            const match = /#([^)'"]+)/.exec(raw);
+            return match ? document.getElementById(match[1]) : null;
+        }
+
+        function clipBox(group) {
+            const node = clipNode(group);
+            const path = node && node.querySelector('path');
+            return path ? path.getBBox() : null;
+        }
+
+        Plotly.newPlot(gd, [{
+            type: 'contour',
+            x: x,
+            y: y,
+            z: z
+        }], {
+            width: 480,
+            height: 420,
+            margin: {b: 90},
+            xaxis: {rangeslider: {visible: true}}
+        })
+        .then(function() {
+            const main = gd.querySelector('.subplot .contour');
+            const range = gd.querySelector('.rangeslider-rangeplot .contour');
+            const ya = gd._fullLayout.yaxis;
+            const mainSpan = Math.abs(ya.c2p(y[0], true) - ya.c2p(y[y.length - 1], true));
+            const mainBox = clipBox(main);
+            const rangeBox = clipBox(range);
+
+            expect(main).not.toBe(null);
+            expect(range).not.toBe(null);
+            expect(clipNode(main)).not.toBe(clipNode(range));
+            expect(mainBox.height).toBeCloseTo(mainSpan, 0);
+            expect(mainBox.height).toBeGreaterThan(rangeBox.height * 2);
+
+            const zWithGap = z.map((row) => row.slice());
+            zWithGap[1][2] = null;
+            return Plotly.restyle(gd, 'z', [zWithGap]);
+        })
+        .then(function() {
+            const main = gd.querySelector('.subplot .contour');
+            const range = gd.querySelector('.rangeslider-rangeplot .contour');
+            const mainBox = clipBox(main);
+            const rangeBox = clipBox(range);
+
+            expect(clipNode(main)).not.toBe(clipNode(range));
+            expect(mainBox.height).toBeGreaterThan(rangeBox.height * 2);
+        })
+        .then(done, done.fail);
+    });
+
     it('keeps the correct ordering after hide and show', function(done) {
         function getIndices() {
             var out = [];
