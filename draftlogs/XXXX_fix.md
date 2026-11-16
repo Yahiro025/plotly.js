@@ -1,0 +1,1 @@
+ - Rotate axis tick labels when unsorted `tickvals` overlap [[#XXXX](https://github.com/plotly/plotly.js/pull/XXXX)]

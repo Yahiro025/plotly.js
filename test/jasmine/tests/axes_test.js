@@ -9101,3 +9101,57 @@ describe('axis domainpad', () => {
         .then(done, done.fail);
     });
 });
+
+describe('unsorted tickvals', function() {
+    const labels = [
+        'Measurement alpha',
+        'Measurement bravo',
+        'Measurement charlie',
+        'Measurement delta',
+        'Measurement echo'
+    ];
+
+    let gd;
+
+    beforeEach(function() {
+        gd = createGraphDiv();
+    });
+
+    afterEach(destroyGraphDiv);
+
+    function angleFor(tickvals) {
+        return Plotly.newPlot(gd, [{
+            x: [1, 2, 3, 4, 5],
+            y: [1, 1, 1, 1, 1]
+        }], {
+            width: 560,
+            height: 400,
+            margin: {l: 50, r: 50, t: 20, b: 80},
+            xaxis: {
+                range: [0.5, 5.5],
+                tickmode: 'array',
+                tickvals: tickvals,
+                ticktext: labels
+            }
+        }).then(function() {
+            return gd._fullLayout.xaxis._tickAngles.xtick;
+        });
+    }
+
+    it('rotates overlapping labels when tickvals are not in position order', function(done) {
+        const seen = {};
+
+        angleFor([1, 2, 3, 4, 5]).then(function(angle) {
+            seen.sorted = angle;
+            return angleFor([5, 4, 3, 2, 1]);
+        }).then(function(angle) {
+            seen.reversed = angle;
+            return angleFor([1, 3, 5, 2, 4]);
+        }).then(function(angle) {
+            seen.unsorted = angle;
+            expect(seen.sorted).not.toBe(0);
+            expect(seen.reversed).toBeCloseTo(seen.sorted, 3);
+            expect(seen.unsorted).toBeCloseTo(seen.sorted, 3);
+        }).then(done, done.fail);
+    });
+});

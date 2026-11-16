@@ -4045,7 +4045,8 @@ axes.drawLabels = function(gd, ax, opts) {
                     left: x - bb.width / 2,
                     // impose a 2px gap
                     right: x + bb.width / 2 + 2,
-                    width: bb.width + 2
+                    width: bb.width + 2,
+                    x: x
                 });
             });
 
@@ -4057,8 +4058,15 @@ axes.drawLabels = function(gd, ax, opts) {
             // TODO should secondary labels also fall into this fix-overlap regime?
             var preventOverlapWithTick = (ax.tickson === 'boundaries' || ax.showdividers) && !opts.secondary;
 
-            var vLen = vals.length;
-            var tickSpacing = Math.abs((vals[vLen - 1].x - vals[0].x) * ax._m) / (vLen - 1);
+            const vLen = vals.length;
+            let xMin = vals[0].x;
+            let xMax = xMin;
+            for(let k = 1; k < vLen; k++) {
+                const xk = vals[k].x;
+                if(xk < xMin) xMin = xk;
+                if(xk > xMax) xMax = xk;
+            }
+            const tickSpacing = Math.abs((xMax - xMin) * ax._m) / (vLen - 1);
 
             var adjacent = preventOverlapWithTick ? tickSpacing / 2 : tickSpacing;
             var opposite = preventOverlapWithTick ? ax.ticklen : maxFontSize * 1.25 * maxLines;
@@ -4111,8 +4119,10 @@ axes.drawLabels = function(gd, ax, opts) {
                 var pad = !isAligned ? 0 :
                 (ax.tickwidth || 0) + 2 * TEXTPAD;
 
-                for(i = 0; i < lbbArray.length - 1; i++) {
-                    if(Lib.bBoxIntersect(lbbArray[i], lbbArray[i + 1], pad)) {
+                // tickvals keep input order, which can differ from position order
+                const ordered = lbbArray.slice().sort((a, b) => a.x - b.x);
+                for(i = 0; i < ordered.length - 1; i++) {
+                    if(Lib.bBoxIntersect(ordered[i], ordered[i + 1], pad)) {
                         autoangle = newAngle;
                         break;
                     }
